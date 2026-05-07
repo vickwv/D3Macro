@@ -44,6 +44,7 @@ _COMBO_OPAQUE_QSS = (
     "  background-color: #ffffff;"
     "  border: 1px solid #d4d8de;"
     "  border-bottom: 1px solid #d4d8de;"
+    "  font-weight: 500;"
     "}"
     "ComboBox:hover {"
     "  background-color: #f5f7fa;"
@@ -58,6 +59,11 @@ _COMBO_OPAQUE_QSS = (
     "  border-bottom: 1px solid #dce0e6;"
     "}"
 )
+
+# Font-weight overrides for Fluent SpinBox and CheckBox widgets (which default to
+# QFont.Normal / weight 400 via setFont() in their constructors).
+_SPIN_FONT_QSS = "SpinBox, DoubleSpinBox { font-weight: 500; }"
+_CHECK_FONT_QSS = "CheckBox { font-weight: 500; }"
 
 try:
     from .gui_i18n import tr, localize_text
@@ -88,12 +94,12 @@ QMainWindow {
 QWidget {
     font-family: "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "DejaVu Sans", sans-serif;
     font-size: 13px;
-    font-weight: 400;
+    font-weight: 500;
     color: #1f2933;
 }
 QLabel {
     color: #1f2933;
-    font-weight: 400;
+    font-weight: 500;
 }
 QPushButton,
 QComboBox,
@@ -103,7 +109,7 @@ QDoubleSpinBox,
 QCheckBox,
 QTableWidget {
     font-size: 13px;
-    font-weight: 400;
+    font-weight: 500;
     color: #1f2933;
 }
 QWidget:disabled,
@@ -115,7 +121,7 @@ QSpinBox:disabled,
 QDoubleSpinBox:disabled,
 QCheckBox:disabled {
     color: #7f8996;
-    font-weight: 400;
+    font-weight: 500;
 }
 QScrollArea {
     border: none;
@@ -129,7 +135,7 @@ QListWidget#navigationList {
     outline: none;
     font-family: "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "DejaVu Sans", sans-serif;
     font-size: 13px;
-    font-weight: 400;
+    font-weight: 500;
     color: #243040;
 }
 QListWidget#navigationList::item {
@@ -139,7 +145,7 @@ QListWidget#navigationList::item {
     border-radius: 6px;
     color: #202b3a;
     font-size: 13px;
-    font-weight: 400;
+    font-weight: 500;
 }
 QListWidget#navigationList::item:hover {
     background: #edf2f7;
@@ -148,11 +154,11 @@ QListWidget#navigationList::item:hover {
 QListWidget#navigationList::item:selected {
     background: #dfeafe;
     color: #174ea6;
-    font-weight: 400;
+    font-weight: 500;
 }
 QListWidget#navigationList::item:disabled {
     color: #7f8996;
-    font-weight: 400;
+    font-weight: 500;
 }
 QWidget#navSidebar {
     background: transparent;
@@ -163,14 +169,14 @@ QFrame#navActions {
 QPushButton#navActionButton {
     color: #243040;
     font-size: 13px;
-    font-weight: 400;
+    font-weight: 500;
     min-height: 30px;
     padding-left: 8px;
     padding-right: 8px;
 }
 QPushButton#navActionButton:disabled {
     color: #7f8996;
-    font-weight: 400;
+    font-weight: 500;
 }
 QStackedWidget {
     background: #ffffff;
@@ -184,7 +190,7 @@ QGroupBox {
     margin-top: 8px;
     padding-top: 4px;
     background: transparent;
-    font-weight: 400;
+    font-weight: 500;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
@@ -198,7 +204,7 @@ QLabel#pathLabel {
     border: 1px solid #d9dde3;
     border-radius: 4px;
     padding: 4px 8px;
-    font-weight: 400;
+    font-weight: 500;
 }
 QFrame#statusStrip {
     background: #ffffff;
@@ -208,12 +214,12 @@ QFrame#statusStrip {
     border-bottom: none;
 }
 QLabel#statusStripLabel {
-    font-weight: 400;
+    font-weight: 500;
     color: #344256;
 }
 QLabel#statusStripValue {
     color: #1f2933;
-    font-weight: 400;
+    font-weight: 500;
 }
 QFrame#statusDot {
     border-radius: 5px;
@@ -235,7 +241,7 @@ QFrame#toolbarFrame {
 QLabel#toolbarLabel {
     color: #344256;
     font-size: 12px;
-    font-weight: 400;
+    font-weight: 500;
 }
 QFrame#langSwitcher {
     border: 1px solid #d0d5dc;
@@ -247,7 +253,7 @@ QPushButton#langButton {
     background: transparent;
     color: #344256;
     font-size: 12px;
-    font-weight: 400;
+    font-weight: 500;
     padding: 0 6px;
     min-width: 28px;
     min-height: 22px;
@@ -262,25 +268,25 @@ QPushButton#langButton:hover:!checked {
 }
 QLabel#sectionHint {
     color: #536173;
-    font-weight: 400;
+    font-weight: 500;
 }
 QLabel#pageTitle {
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 500;
     color: #182230;
     padding-top: 2px;
 }
 QLabel#pageSubtitle {
     color: #536173;
-    font-weight: 400;
+    font-weight: 500;
 }
 QLabel#sectionTitle {
-    font-weight: 400;
+    font-weight: 500;
     color: #182230;
 }
 QLabel#inlineParamLabel {
     color: #344256;
-    font-weight: 400;
+    font-weight: 500;
 }
 QFrame#sectionSeparator {
     background: #e6e9ee;
@@ -302,7 +308,7 @@ QTableWidget {
     selection-background-color: #cfe0fc;
     selection-color: #1a3a6b;
     color: #1f2933;
-    font-weight: 400;
+    font-weight: 500;
 }
 QHeaderView::section {
     background: #dce8f7;
@@ -311,7 +317,7 @@ QHeaderView::section {
     border-right: 1px solid #c8d6f0;
     border-bottom: 2px solid #2f72c4;
     padding: 4px 6px;
-    font-weight: 400;
+    font-weight: 500;
 }
 QHeaderView::section:last {
     border-right: none;
@@ -494,6 +500,16 @@ def tune_combo_box(combo):
         _qfw_setCustomStyleSheet(combo, _COMBO_OPAQUE_QSS, _COMBO_OPAQUE_QSS)
     combo.setMaxVisibleItems(12)
     return combo
+
+
+def tune_spin_box(spin) -> None:
+    """Apply font-weight 500 override to a Fluent SpinBox/DoubleSpinBox instance."""
+    _qfw_setCustomStyleSheet(spin, _SPIN_FONT_QSS, _SPIN_FONT_QSS)
+
+
+def tune_check_box(chk) -> None:
+    """Apply font-weight 500 override to a Fluent CheckBox instance."""
+    _qfw_setCustomStyleSheet(chk, _CHECK_FONT_QSS, _CHECK_FONT_QSS)
 
 
 def combo_value(combo: QComboBox) -> int:

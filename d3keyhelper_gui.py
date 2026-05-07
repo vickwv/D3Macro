@@ -303,9 +303,8 @@ class MainWindow(QMainWindow):
         nav_font = QFont()
         apply_navigation_font_family(nav_font)
         nav_font.setPointSize(10)
-        nav_font.setWeight(QFont.Weight.Normal)
+        nav_font.setWeight(QFont.Weight.Medium)
         self.navigation.setFont(nav_font)
-        self.navigation.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.navigation.setVerticalScrollMode(QListWidget.ScrollMode.ScrollPerPixel)
         self.navigation.setSpacing(2)
         self.navigation.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
@@ -445,7 +444,7 @@ class MainWindow(QMainWindow):
         font = item.font()
         apply_navigation_font_family(font)
         font.setPointSize(10)
-        font.setWeight(QFont.Weight.Normal)
+        font.setWeight(QFont.Weight.Medium)
         item.setFont(font)
         return item
 
@@ -911,20 +910,20 @@ class MainWindow(QMainWindow):
         state, values = classify_safezone_text(text)
         if state == "set":
             status.setText(localize_text("安全格状态：已设置"))
-            status.setStyleSheet("color: #1f7a3f; font-weight: 400;")
+            status.setStyleSheet("color: #1f7a3f; font-weight: 500;")
             slots = ",".join(str(value) for value in sorted(values))
             status.setToolTip(tr(f"当前安全格：{slots}", f"Current safe slots: {slots}"))
         elif state == "legacy-default":
             status.setText(localize_text("安全格状态：未设置（沿用原版默认值 61,62,63）"))
-            status.setStyleSheet("color: #536173; font-weight: 400;")
+            status.setStyleSheet("color: #536173; font-weight: 500;")
             status.setToolTip(tr("原版 AHK 默认把 safezone 写成 61,62,63，用来提示格式；这三个格子并不存在。", "The original AHK version used 61,62,63 as a format placeholder; those slots do not exist."))
         elif state == "unset":
             status.setText(localize_text("安全格状态：未设置"))
-            status.setStyleSheet("color: #536173; font-weight: 400;")
+            status.setStyleSheet("color: #536173; font-weight: 500;")
             status.setToolTip(tr("当前没有启用任何 1-60 的安全格。", "No 1-60 safe slots are enabled."))
         else:
             status.setText(localize_text("安全格状态：格式错误"))
-            status.setStyleSheet("color: #b42318; font-weight: 400;")
+            status.setStyleSheet("color: #b42318; font-weight: 500;")
             status.setToolTip(tr("请填写 1-60 之间的格子编号，使用英文逗号分隔，例如：1,2,3", "Use slot numbers from 1 to 60, separated by commas, for example: 1,2,3"))
         status.show()
 
@@ -1379,6 +1378,16 @@ def main() -> int:
             QApplication.addLibraryPath(_p)
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
+    # Prefer Microsoft YaHei as the primary font family for Fluent widgets.
+    # The default Fluent font list starts with "Segoe UI" which has no CJK
+    # glyphs; Chinese characters would then fall back to SimSun (宋体), a
+    # thin Song-style font that looks very faint.  Putting Microsoft YaHei
+    # first ensures CJK text renders with the correct hinted weight.
+    try:
+        from qfluentwidgets import setFontFamilies
+        setFontFamilies(['Microsoft YaHei', 'Noto Sans CJK SC', 'PingFang SC', 'Segoe UI'])
+    except Exception:
+        pass
     setTheme(Theme.LIGHT)
     setThemeColor('#2f72c4')
     icon_path = app_icon_path()

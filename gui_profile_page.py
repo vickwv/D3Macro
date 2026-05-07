@@ -44,7 +44,7 @@ try:
         _add_combo_item, _make_line_edit, build_option_grid,
         build_helper_section_grid, build_page_header, build_section,
         build_toggle_grid, combo_value, set_combo_value, tune_combo_box,
-        tune_skill_widget,
+        tune_skill_widget, tune_spin_box, tune_check_box,
     )
     from .config_schema import pd, skill_hotkey_default
     from .config_io import parse_int
@@ -65,7 +65,7 @@ except ImportError:
         _add_combo_item, _make_line_edit, build_option_grid,
         build_helper_section_grid, build_page_header, build_section,
         build_toggle_grid, combo_value, set_combo_value, tune_combo_box,
-        tune_skill_widget,
+        tune_skill_widget, tune_spin_box, tune_check_box,
     )
     from config_schema import pd, skill_hotkey_default  # type: ignore[no-redef]
     from config_io import parse_int  # type: ignore[no-redef]
@@ -342,11 +342,13 @@ class ProfileTab(QWidget):
         widget.setSymbolVisible(False)
         widget.setRange(minimum, maximum)
         widget.setValue(value)
+        tune_spin_box(widget)
         return widget
 
     def _check(self, checked: bool) -> CheckBox:
         widget = CheckBox()
         widget.setChecked(checked)
+        tune_check_box(widget)
         return widget
 
     def _connect_dynamic_controls(self) -> None:
