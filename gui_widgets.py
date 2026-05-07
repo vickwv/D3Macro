@@ -30,9 +30,34 @@ sys.stdout = _io.StringIO()
 from qfluentwidgets import (  # noqa: E402
     ComboBox as FluentComboBox,
     LineEdit,
+    setCustomStyleSheet as _qfw_setCustomStyleSheet,
 )
 sys.stdout = _stdout_backup
 del _stdout_backup, _io
+
+# Override the Fluent ComboBox semi-transparent backgrounds/borders with fully
+# opaque equivalents.  The rgba values in the Fluent theme QSS are designed for
+# Windows Mica/Acrylic backdrops; on a plain solid background they create a
+# visible "glass ring" artifact on Windows.
+_COMBO_OPAQUE_QSS = (
+    "ComboBox {"
+    "  background-color: #ffffff;"
+    "  border: 1px solid #d4d8de;"
+    "  border-bottom: 1px solid #d4d8de;"
+    "}"
+    "ComboBox:hover {"
+    "  background-color: #f5f7fa;"
+    "}"
+    "ComboBox:pressed {"
+    "  background-color: #eaecef;"
+    "  border-bottom: 1px solid #d4d8de;"
+    "}"
+    "ComboBox:disabled {"
+    "  background: #f0f2f5;"
+    "  border: 1px solid #dce0e6;"
+    "  border-bottom: 1px solid #dce0e6;"
+    "}"
+)
 
 try:
     from .gui_i18n import tr, localize_text
@@ -463,6 +488,10 @@ def tune_combo_box(combo):
         popup.setViewportMargins(0, 0, 0, 0)
         popup.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         combo.setView(popup)
+    if isinstance(combo, FluentComboBox):
+        # Replace semi-transparent Fluent QSS with solid equivalents so the
+        # "glass ring" rendering artifact does not appear on Windows.
+        _qfw_setCustomStyleSheet(combo, _COMBO_OPAQUE_QSS, _COMBO_OPAQUE_QSS)
     combo.setMaxVisibleItems(12)
     return combo
 
