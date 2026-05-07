@@ -226,6 +226,11 @@ class MainWindow(QMainWindow):
         self._config_apply_timer.timeout.connect(self._apply_live_config_change)
         self._init_shell_widgets()
         self.setWindowTitle("D3Macro")
+        # Set window icon here so title bar and taskbar button show the correct
+        # icon from the moment the window is created (important on Windows).
+        _icon_path = app_icon_path()
+        if _icon_path is not None:
+            self.setWindowIcon(QIcon(str(_icon_path)))
         self.setStyleSheet(APP_STYLE_SHEET)
         self.resize(*FULL_WINDOW_SIZE)
         self.setMinimumSize(960, 620)
@@ -1268,9 +1273,16 @@ class MainWindow(QMainWindow):
         self.tray_icon = QSystemTrayIcon(self)
         icon_path = app_icon_path()
         if icon_path is not None:
-            self.tray_icon.setIcon(QIcon(str(icon_path)))
+            icon = QIcon(str(icon_path))
         else:
-            self.tray_icon.setIcon(self.windowIcon())
+            icon = self.windowIcon()
+        # On Windows, QSystemTrayIcon with a null icon is invisible.
+        # Fall back to Qt's built-in application icon as a last resort.
+        if icon.isNull():
+            icon = QApplication.style().standardIcon(
+                QApplication.style().StandardPixmap.SP_TitleBarMenuButton
+            )
+        self.tray_icon.setIcon(icon)
         self.tray_icon.setToolTip("D3Macro")
         self._tray_menu = QMenu()
         self.tray_icon.setContextMenu(self._tray_menu)

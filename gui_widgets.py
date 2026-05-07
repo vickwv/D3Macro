@@ -73,14 +73,27 @@ except ImportError:
     import gui_i18n as _gui_i18n  # type: ignore[no-redef]
 
 def app_icon_path() -> Path | None:
-    candidates = []
-    for filename in ("d3macro-256.png", "d3keyhelper-linux-256.png"):
-        meipass = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    meipass = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    source_dir = Path(__file__).resolve().parent
+    candidates: list[Path] = []
+
+    if sys.platform == "win32":
+        # ICO is preferred on Windows: multi-resolution, loads natively without
+        # Qt's PNG plugin, works reliably for both title bar and system tray.
+        for ico in ("d3macro.ico",):
+            candidates += [
+                meipass / ico,
+                source_dir / ico,
+                source_dir / "packaging" / "icons" / ico,
+            ]
+
+    for png in ("d3macro-256.png", "d3keyhelper-linux-256.png"):
         candidates += [
-            meipass / filename,
-            Path(__file__).resolve().parent / filename,
-            Path(__file__).resolve().parent / "packaging" / "icons" / filename,
+            meipass / png,
+            source_dir / png,
+            source_dir / "packaging" / "icons" / png,
         ]
+
     for path in candidates:
         if path.exists():
             return path

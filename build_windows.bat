@@ -18,8 +18,10 @@ echo === Generating icon ===
 if errorlevel 1 (
   echo WARNING: Icon generation failed. Building without custom icon.
   set ICON_ICO=
+  goto :build_without_icon
 )
 
+:build_with_icon
 %PYTHON_BIN% -m PyInstaller ^
   --noconfirm ^
   --clean ^
@@ -32,9 +34,27 @@ if errorlevel 1 (
   --collect-submodules pynput ^
   --add-data "%ROOT_DIR%mainwindow.png;." ^
   --add-data "%ICON_PNG%;." ^
+  --add-data "%ICON_ICO%;." ^
   --icon "%ICON_ICO%" ^
   "%ROOT_DIR%d3keyhelper_gui.py"
+goto :build_done
 
+:build_without_icon
+%PYTHON_BIN% -m PyInstaller ^
+  --noconfirm ^
+  --clean ^
+  --windowed ^
+  --onefile ^
+  --name "%APP_NAME%" ^
+  --hidden-import pynput.keyboard._win32 ^
+  --hidden-import pynput.mouse._win32 ^
+  --collect-submodules mss ^
+  --collect-submodules pynput ^
+  --add-data "%ROOT_DIR%mainwindow.png;." ^
+  --add-data "%ICON_PNG%;." ^
+  "%ROOT_DIR%d3keyhelper_gui.py"
+
+:build_done
 echo.
 echo === Build complete: dist\%APP_NAME%.exe ===
 endlocal
