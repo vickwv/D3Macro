@@ -187,6 +187,7 @@ EN_TEXT = {
     "按键队列": "Skill Queue",
     "快速暂停": "Quick Pause",
     "技能表": "Skill table",
+    "开启后，双击 Tab 键可以暂停/恢复宏\n宏已暂停时，双击回车键、M 键、T 键会停止宏\n带 Ctrl / Alt / Shift / Win 修饰时不会触发": "When enabled, double-press Tab to pause/resume the macro.\nWhen the macro is already paused, double-press Enter, M, or T to stop it.\nCtrl / Alt / Shift / Win modified keys do not trigger smart pause.",
 }
 
 ZH_TW_MAP = str.maketrans({
@@ -229,5 +230,4 @@ def tr(chinese: str, english: str, traditional: str | None = None) -> str:
     if UI_LANGUAGE == "zh_TW":
         return traditional if traditional is not None else zh_to_tw(chinese)
     return chinese
-
 

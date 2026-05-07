@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 import os
 from pathlib import Path
@@ -287,6 +288,130 @@ class ConfigTests(unittest.TestCase):
         app._capture = FakeCapture()
         region = app._capture_region_rgb(10, 20, 2, 2)
         self.assertEqual(region, [[10, 10, 10, 10], [20, 20, 20, 20], [30, 30, 30, 30]])
+
+    def test_reforge_helper_starts_without_mouse_zone_gate(self) -> None:
+        app = self._make_macro_app()
+        app.general.helper.gamble_enabled = False
+        app.general.helper.salvage_enabled = False
+        app.general.helper.reforge_enabled = True
+        app.general.helper.upgrade_enabled = False
+        app.general.helper.convert_enabled = False
+        app.general.helper.abandon_enabled = False
+        app.general.helper.loot_enabled = False
+        window = runtime.WindowInfo(
+            1,
+            "",
+            "steam_app_4238117006 steam_app_4238117006",
+            10,
+            20,
+            3440,
+            1440,
+            pid=352866,
+            commandline=r"C:\Program Files (x86)\Diablo III\x64\Diablo III64.exe",
+        )
+        image = mock.Mock(window=window)
+        app._capture_game_image = mock.Mock(return_value=(image, 3440, 1440))
+        app.sender.mouse_position.return_value = (window.x + 100, window.y + 100)
+        app._one_button_reforge_helper = mock.Mock()
+
+        with mock.patch.object(runtime, "is_kanai_cube_open", return_value=2):
+            app._run_helper()
+
+        app._one_button_reforge_helper.assert_called_once_with(3440, 1440, window.x + 100, window.y + 100)
+
+    def test_reforge_helper_cancels_when_mouse_does_not_load_item(self) -> None:
+        app = self._make_macro_app()
+        app.general.helper.max_reforge = 1
+        app._active_window = mock.Mock(return_value=runtime.WindowInfo(1, "Diablo III", "class", 0, 0, 3440, 1440))
+        app._helper_should_break = mock.Mock(return_value=False)
+        app._click_right = mock.Mock()
+        app._click_left = mock.Mock()
+        app._move_mouse = mock.Mock()
+        app._helper_sleep = mock.Mock()
+        app._kanai_slot_has_item = mock.Mock(return_value=False)
+
+        app._one_button_reforge_helper(3440, 1440, 100, 200)
+
+        app._click_right.assert_called_once()
+        app._kanai_slot_has_item.assert_called_once_with(3440, 1440, 1)
+        app._click_left.assert_not_called()
+
+    def test_keep_buff_mouse_press_sets_interaction_grace(self) -> None:
+        app = self._make_macro_app()
+        app.current_profile.skills[0].action = runtime.SkillAction.KEEP_BUFF
+        app._refresh_input_watch()
+        self.assertTrue(app.needs_mouse_listener())
+        with app._lock:
+            app._running = True
+        before = time.monotonic()
+
+        app.on_key_press("mouse:left")
+
+        self.assertGreater(app._keep_buff_interaction_until, before)
+
+    def test_keep_buff_skips_refresh_during_interaction_grace(self) -> None:
+        app = self._make_macro_app()
+        skill = app.current_profile.skills[0]
+        skill.action = runtime.SkillAction.KEEP_BUFF
+        with app._lock:
+            app._running = True
+        app._keep_buff_interaction_until = time.monotonic() + 1.0
+        app._active_window = mock.Mock()
+
+        app._execute_skill(skill)
+
+        app._active_window.assert_not_called()
+        app.sender.tap.assert_not_called()
+
+    def test_smart_pause_tab_requires_double_press(self) -> None:
+        app = self._make_macro_app()
+        with app._lock:
+            app._running = True
+        app.toggle_pause = mock.Mock()
+
+        app.on_key_press("tab")
+        app.on_key_release("tab")
+        app.toggle_pause.assert_not_called()
+
+        app.on_key_press("tab")
+
+        app.toggle_pause.assert_called_once_with()
+
+    def test_smart_pause_ignores_modified_tab(self) -> None:
+        app = self._make_macro_app()
+        app._refresh_input_watch()
+        with app._lock:
+            app._running = True
+        app.toggle_pause = mock.Mock()
+
+        app.on_key_press("alt")
+        app.on_key_press("tab")
+        app.on_key_release("tab")
+        app.on_key_press("tab")
+
+        app.toggle_pause.assert_not_called()
+
+    def test_smart_pause_stop_requires_paused_double_press(self) -> None:
+        app = self._make_macro_app()
+        with app._lock:
+            app._running = True
+        app.stop_macro = mock.Mock()
+
+        app.on_key_press("m")
+        app.on_key_release("m")
+        app.on_key_press("m")
+        app.stop_macro.assert_not_called()
+
+        app.on_key_release("m")
+        with app._lock:
+            app._paused = True
+        app.on_key_press("m")
+        app.on_key_release("m")
+        app.stop_macro.assert_not_called()
+
+        app.on_key_press("m")
+
+        app.stop_macro.assert_called_once_with(reason="收到智能暂停停止键")
 
     def test_stop_macro_drains_skill_queue(self) -> None:
         """After stop_macro(), _skill_queue must be empty."""

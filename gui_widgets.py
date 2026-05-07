@@ -42,12 +42,14 @@ except ImportError:
     import gui_i18n as _gui_i18n  # type: ignore[no-redef]
 
 def app_icon_path() -> Path | None:
-    filename = "d3keyhelper-linux-256.png"
-    candidates = [
-        Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / filename,
-        Path(__file__).resolve().parent / filename,
-        Path(__file__).resolve().parent / "packaging" / "icons" / filename,
-    ]
+    candidates = []
+    for filename in ("d3macro-256.png", "d3keyhelper-linux-256.png"):
+        meipass = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+        candidates += [
+            meipass / filename,
+            Path(__file__).resolve().parent / filename,
+            Path(__file__).resolve().parent / "packaging" / "icons" / filename,
+        ]
     for path in candidates:
         if path.exists():
             return path
@@ -292,6 +294,7 @@ QHeaderView::section:last {
 """
 
 
+
 START_METHOD_ITEMS = [
     (1, "鼠标右键"),
     (2, "鼠标中键"),
@@ -381,7 +384,11 @@ REPEAT_TOOLTIP = "每次策略触发时，连续发送该技能按键的次数"
 REPEAT_INTERVAL_TOOLTIP = "重复发送同一技能时，两次按键之间的间隔"
 TRIGGER_BUTTON_TOOLTIP = "当策略为“按键触发”时，按下这个触发键才会执行技能"
 RUN_ON_START_TOOLTIP = "开启后，各技能策略会在宏启动瞬间先执行一次"
-SMART_PAUSE_TOOLTIP = "开启后，游戏中按Tab键可以暂停宏\n回车键，M键，T键会停止宏"
+SMART_PAUSE_TOOLTIP = (
+    "开启后，双击 Tab 键可以暂停/恢复宏\n"
+    "宏已暂停时，双击回车键、M 键、T 键会停止宏\n"
+    "带 Ctrl / Alt / Shift / Win 修饰时不会触发"
+)
 GAME_GAMMA_TOOLTIP = "如果你在游戏里用了自定义 Gamma，把 D3Prefs.txt 里的 Gamma 值填到这里"
 BUFF_PERCENT_TOOLTIP = "保持Buff模式会在Buff剩余低于这个比例时自动续按，范围 0 到 1"
 GAME_RESOLUTION_TOOLTIP = "Auto 表示自动读取窗口大小，也可以手动写成 1920x1080 这种格式"
