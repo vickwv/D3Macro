@@ -210,6 +210,13 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 
 ## 更新日志
 
+### v2.0.4（2026-05-07）
+
+**Bug 修复（Windows）**
+
+- **标题栏左上角无图标**：Windows 下窗口标题栏和任务栏按钮不显示图标。修复方案：在 `MainWindow.__init__()` 中紧随 `setWindowTitle()` 之后立即调用 `setWindowIcon()`，确保 HWND 创建时图标已到位。
+- **系统托盘图标不可见 / 缺少切换配置菜单**：`QIcon` 为空时 `QSystemTrayIcon` 在 Windows 下不可见。三处同步修复：(1) `build_windows.bat` 新增 `--add-data` 将 `d3macro.ico` 一并打包进 PyInstaller 包（之前仅作为 EXE 资源嵌入）；(2) `app_icon_path()` 在 Windows 下优先查找 `d3macro.ico`（ICO 含多分辨率，不依赖 Qt 的 PNG 插件，运行时更可靠）；(3) `_build_tray_icon()` 在文件图标与窗口图标均为空时回退到 Qt 内置 `SP_TitleBarMenuButton` 图标，保证通知区域入口始终可见。
+
 ### v2.0.3（2026-05-07）
 
 **Bug 修复**

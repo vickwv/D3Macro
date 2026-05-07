@@ -210,6 +210,13 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 
 ## Changelog
 
+### v2.0.4 (2026-05-07)
+
+**Bug Fixes (Windows)**
+
+- **Title bar icon missing**: The window title bar and taskbar button showed no icon on Windows. Fixed by calling `setWindowIcon()` inside `MainWindow.__init__()` immediately after the window title is set, ensuring the icon is applied before the HWND is ever shown.
+- **System tray icon invisible / missing profile-switch menu**: `QSystemTrayIcon` on Windows is invisible when given a null `QIcon`. Fixed three-ways: (1) `build_windows.bat` now bundles `d3macro.ico` into the PyInstaller package via `--add-data` in addition to passing it as the EXE resource icon; (2) `app_icon_path()` searches for `d3macro.ico` first on Windows (ICO is natively multi-resolution and doesn't depend on Qt's PNG plugin at runtime); (3) `_build_tray_icon()` falls back to Qt's built-in `SP_TitleBarMenuButton` icon if both the file-based and app-window icons are null, guaranteeing the notification-area entry is always visible.
+
 ### v2.0.3 (2026-05-07)
 
 **Bug Fixes**
