@@ -1357,6 +1357,12 @@ class MainWindow(QMainWindow):
 
 def main() -> int:
     if "--runner" in sys.argv[1:]:
+        # Reconfigure stdout/stderr to UTF-8 before any print() calls so
+        # Chinese text doesn't crash on Western Windows (cp1252 default).
+        if sys.platform == "win32":
+            for _s in (sys.stdout, sys.stderr):
+                if hasattr(_s, "reconfigure"):
+                    _s.reconfigure(encoding="utf-8", errors="replace")
         original_argv = sys.argv[:]
         try:
             sys.argv = [sys.argv[0]] + [arg for arg in sys.argv[1:] if arg != "--runner"]

@@ -1451,6 +1451,13 @@ def build_argument_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    # Ensure UTF-8 stdout/stderr on Windows so Chinese print() calls don't
+    # crash when the console or pipe uses a narrow code page (e.g. cp1252).
+    if sys.platform == "win32":
+        for _s in (sys.stdout, sys.stderr):
+            if hasattr(_s, "reconfigure"):
+                _s.reconfigure(encoding="utf-8", errors="replace")
+
     parser = build_argument_parser()
     args = parser.parse_args()
     if args.lang:
