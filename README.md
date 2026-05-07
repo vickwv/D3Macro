@@ -6,13 +6,42 @@
 
 **Language:** English | [简体中文](./README.zh-CN.md)
 
-Cross-platform combat automation toolkit for **Diablo III**, featuring native Linux Wayland support, visual detection, and configurable skill rotation profiles.
+Cross-platform **Diablo III macro automation tool** for skill rotation, visual detection, and gameplay assistance on Windows and Linux, including KDE Wayland.
 
-D3Macro is a desktop automation helper for Diablo III players who want reliable cross-platform combat automation without invasive game modification.
+D3Macro is a **Diablo 3 automation tool** built for players who want configurable skill rotation macros, screenshot-based game state detection, and cross-platform desktop automation without invasive game modification.
 
-It combines configurable combat macros, visual state detection, platform-aware input and capture backends, and a modern Qt desktop interface in a single lightweight application.
+It is designed as a **safe external macro solution**: no DLL injection, no memory patching, and no kernel drivers - only visual detection, game window awareness, and desktop input automation.
 
-Unlike a simple keyboard repeater, D3Macro includes game window detection, screenshot-based recognition, inventory-safe slot handling, and Linux KDE Wayland compatibility.
+## What is D3Macro?
+
+D3Macro is a **Diablo III macro / skill rotation tool** that helps automate repetitive gameplay tasks such as:
+
+- skill rotation automation
+- timed, repeated, and hold-based macro execution
+- screenshot-based inventory and UI state recognition
+- per-profile combat configuration for different builds
+
+Unlike keystroke-only or AutoHotkey-style macros, D3Macro is built for:
+
+- Linux Wayland compatibility
+- visual-based automation workflows
+- window-aware input handling
+- cross-platform profile management
+
+## Problem
+
+Diablo III combat often requires repetitive skill timing and manual rotation.
+
+Most macro tools focus on simple input replay or Windows-first workflows, which makes them a weak fit for Linux desktops, Wayland sessions, and screenshot-driven automation.
+
+## Solution
+
+D3Macro provides a cross-platform external automation system using:
+
+- visual detection
+- game window detection
+- platform-aware input dispatch
+- configurable skill rotation profiles
 
 ## Why D3Macro
 
@@ -26,6 +55,9 @@ D3Macro extends that with:
 - Linux Wayland compatibility
 - configurable combat profiles
 - integrated Qt desktop GUI
+- no-injection external automation
+
+For players looking for an alternative to AutoHotkey-style Diablo III macros, D3Macro focuses on visual recognition, window-aware automation, and Linux-friendly desktop support.
 
 This makes automation behavior more reliable across desktop environments and Diablo III gameplay scenarios.
 
@@ -53,6 +85,8 @@ This makes automation behavior more reliable across desktop environments and Dia
 | Windows | ✅ Supported | Native foreground-window detection via ctypes |
 
 D3Macro's most distinctive platform feature is Linux game automation on modern desktops, especially KDE Wayland where traditional hook-heavy macro tools are often unreliable.
+
+That makes it a practical **Linux game macro tool**, **Wayland automation tool**, and **cross-platform macro tool** for Diablo III players who need visual detection instead of process injection.
 
 ## Screenshots
 
@@ -169,6 +203,10 @@ dist\D3Macro-Windows.exe
 ```bash
 python -m unittest discover -s tests
 ```
+
+## Keywords
+
+Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux game macro tool, Wayland automation tool, cross-platform macro tool, visual detection automation, pixel based automation tool, safe external macro, no injection game automation, alternative to AutoHotkey for Diablo III
 
 ## Credits
 

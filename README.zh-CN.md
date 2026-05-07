@@ -6,13 +6,42 @@
 
 **语言：** [English](./README.md) | 简体中文
 
-面向 **Diablo III** 的跨平台战斗自动化工具集，具备 Linux Wayland 支持、视觉识别能力，以及可配置的技能循环配置。
+面向 **Diablo III / Diablo 3** 的跨平台宏与自动化工具，支持技能循环、视觉识别，以及 Windows 与 Linux（包括 KDE Wayland）桌面环境。
 
-D3Macro 是为暗黑破坏神 III 玩家设计的桌面自动化助手，目标是在**不侵入游戏进程**的前提下，提供可靠的跨平台战斗自动化能力。
+D3Macro 是一个面向暗黑破坏神 III 玩家设计的 **Diablo 3 automation tool / Diablo 3 macro**，提供可配置技能循环、基于截图的游戏状态检测，以及**不侵入游戏进程**的跨平台桌面自动化能力。
 
-它将可配置战斗宏、视觉状态检测、平台感知的输入与截图后端，以及现代 Qt 桌面界面整合为一个轻量应用。
+它被设计成一个 **safe external macro solution**：不使用 DLL 注入、不修改内存、不依赖内核驱动，而是通过视觉识别、游戏窗口感知和桌面输入自动化完成工作。
 
-和普通键盘连发器不同，D3Macro 提供游戏窗口识别、截图识别、背包安全格保护，以及 Linux KDE Wayland 兼容能力。
+## D3Macro 是什么？
+
+D3Macro 可以理解为一个 **Diablo III macro / skill rotation tool**，适合自动处理这类重复操作：
+
+- 技能循环自动化
+- 定时、重复、按住等宏动作执行
+- 基于截图的背包与 UI 状态识别
+- 面向不同流派的配置档管理
+
+和只做按键回放的宏脚本、或偏 AutoHotkey 风格的方案相比，D3Macro 更强调：
+
+- Linux Wayland 兼容
+- 基于视觉识别的自动化流程
+- 游戏窗口感知输入
+- 跨平台配置档管理
+
+## Problem / 问题
+
+暗黑破坏神 III 的战斗经常依赖重复性的技能时序与手动循环。
+
+很多宏工具主要围绕简单按键回放或 Windows 优先的工作流构建，这让它们在 Linux 桌面、Wayland 会话以及依赖截图识别的场景下并不理想。
+
+## Solution / 方案
+
+D3Macro 提供一套运行在游戏进程之外的跨平台自动化方案，核心包括：
+
+- 视觉识别
+- 游戏窗口检测
+- 平台感知输入分发
+- 可配置技能循环配置档
 
 ## 为什么选择 D3Macro
 
@@ -26,6 +55,9 @@ D3Macro 在此基础上进一步提供：
 - Linux Wayland 兼容
 - 可配置战斗配置档
 - 集成式 Qt 桌面 GUI
+- 无注入的外部自动化方案
+
+如果你在找一个可替代 AutoHotkey 风格脚本的 Diablo III 宏工具，D3Macro 的重点是视觉识别、窗口感知自动化，以及对 Linux 桌面的实际支持。
 
 这让它在不同桌面环境和暗黑破坏神 III 的实际玩法场景中，都能提供更稳定的自动化行为。
 
@@ -53,6 +85,8 @@ D3Macro 在此基础上进一步提供：
 | Windows | ✅ 支持 | 使用 ctypes 进行前台窗口识别 |
 
 D3Macro 最有技术辨识度的部分之一，就是现代 Linux 桌面上的游戏自动化，尤其是 KDE Wayland 场景下对窗口识别与截图链路的打通。
+
+这也让它更接近用户实际会搜索的 **Linux game macro tool**、**Wayland automation tool** 和 **cross-platform macro tool** 这类定位。
 
 ## 截图
 
@@ -169,6 +203,10 @@ dist\D3Macro-Windows.exe
 ```bash
 python -m unittest discover -s tests
 ```
+
+## Keywords / 关键词
+
+Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux game macro tool, Wayland automation tool, cross-platform macro tool, visual detection automation, pixel based automation tool, safe external macro, no injection game automation, alternative to AutoHotkey for Diablo III
 
 ## 致谢
 
