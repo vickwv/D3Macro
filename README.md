@@ -210,6 +210,16 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 
 ## Changelog
 
+### v2.0.2 (2026-05-07)
+
+**Bug Fixes (Windows)**
+
+- **EXE icon missing**: Build script now generates a `.ico` from the PNG and passes it to PyInstaller.
+- **Garbled Chinese in run log**: On Chinese Windows the runner subprocess used GBK encoding. Fixed by injecting `PYTHONIOENCODING=utf-8` and `PYTHONUTF8=1` into the subprocess environment.
+- **GUI freezes on Start / log updates**: `QProcess.waitForStarted` blocked the event loop; tray menu was rebuilt on every log line. Switched to async `errorOccurred` signal and throttled tray rebuilds to state changes only.
+- **Combo box glass-ring artifact**: Fluent semi-transparent QSS produced a visible halo on plain backgrounds. Replaced with fully opaque overrides via `setCustomStyleSheet`.
+- **Fonts very thin on Windows**: Fluent widgets defaulted to `Segoe UI`; Chinese text fell back to SimSun (宋体, thin strokes). Fixed by calling `setFontFamilies(['Microsoft YaHei', ...])` at startup and bumping `font-weight` 400 → 500 throughout.
+
 ### v2.0.1 (2026-05-07)
 
 **Bug Fixes**

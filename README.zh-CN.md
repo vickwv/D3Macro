@@ -210,6 +210,16 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 
 ## 更新日志
 
+### v2.0.2（2026-05-07）
+
+**Bug 修复（Windows）**
+
+- **EXE 缺少图标**：构建脚本现在从 PNG 生成 `.ico` 并通过 `--icon` 传给 PyInstaller。
+- **运行日志中文乱码**：中文 Windows 子进程默认 GBK 编码，修复方案为注入 `PYTHONIOENCODING=utf-8` 和 `PYTHONUTF8=1`。
+- **点击启动 / 日志刷新时界面卡顿**：`waitForStarted` 阻塞主线程；托盘菜单每条日志都重建。改为异步 `errorOccurred` 信号，仅在状态变化时重建托盘菜单。
+- **下拉框出现透明玻璃质感多余圆圈**：Fluent 半透明 QSS 在纯白背景下产生光晕，通过 `setCustomStyleSheet` 替换为不透明颜色。
+- **Windows 下字体很细看不清**：Fluent 控件默认 `Segoe UI`，中文回退到宋体（SimSun）。修复方案：启动时调用 `setFontFamilies(['Microsoft YaHei', ...])` 并将全局 `font-weight: 400` 升级为 `500`。
+
 ### v2.0.1（2026-05-07）
 
 **Bug 修复**
