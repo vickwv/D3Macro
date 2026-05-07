@@ -218,6 +218,12 @@ class InputSender:
 
 
 class MacroApp:
+    _KEEP_BUFF_INTERACTION_BASES = frozenset({"mouse:left", "mouse:right", "enter", "t", "m"})
+    _KEEP_BUFF_INTERACTION_GRACE_SECONDS = 1.5
+    _SMART_PAUSE_BASES = frozenset({"tab", "enter", "t", "m"})
+    _SMART_PAUSE_MODIFIER_BASES = frozenset({"ctrl", "alt", "shift", "cmd"})
+    _SMART_PAUSE_DOUBLE_TAP_SECONDS = 0.35
+
     def __init__(
         self,
         general: GeneralConfig,
@@ -242,6 +248,7 @@ class MacroApp:
         self._held_keys: list[SendSpec] = []
         self._pressed_bases: set[str] = set()
         self._pressed_modifiers: set[str] = set()
+        self._keep_buff_interaction_until = 0.0
         self._focus_thread: threading.Thread | None = None
         if matcher is not None and np is not None and capture_backend == "kde-wayland" and Image is not None:
             self._capture = SpectacleGameCapture(matcher, general)
@@ -252,8 +259,10 @@ class MacroApp:
         self._skill_queue: queue.Queue[tuple[SendSpec, int]] = queue.Queue()
         self._helper_running = False
         self._helper_break = False
+        self._helper_auto_paused = False
         self._helper_thread: threading.Thread | None = None
         self._quick_pause_last_pressed_at: dict[str, float] = {}
+        self._smart_pause_last_pressed_at: dict[str, float] = {}
         self._watched_press_bases: set[str] = set()
         self._watched_release_bases: set[str] = set()
         self._refresh_input_watch()
@@ -291,8 +300,13 @@ class MacroApp:
         release_bases: set[str] = set()
         self._add_hotkey_watch(press_bases, release_bases, self.general.start_hotkey)
         self._add_hotkey_watch(press_bases, release_bases, self.general.helper.hotkey)
+        if any(skill.action == SkillAction.KEEP_BUFF for profile in self.profiles for skill in profile.skills):
+            press_bases.update(self._KEEP_BUFF_INTERACTION_BASES)
         if self.general.smart_pause:
-            press_bases.update({"tab", "enter", "t", "m"})
+            press_bases.update(self._SMART_PAUSE_BASES)
+            release_bases.update(self._SMART_PAUSE_BASES)
+            press_bases.update(self._SMART_PAUSE_MODIFIER_BASES)
+            release_bases.update(self._SMART_PAUSE_MODIFIER_BASES)
         for profile in self.profiles:
             self._add_hotkey_watch(press_bases, release_bases, profile.profile_hotkey)
             if profile.start_mode == StartMode.HOLD_WHILE:
@@ -304,6 +318,46 @@ class MacroApp:
                     self._add_hotkey_watch(press_bases, release_bases, skill.trigger)
         self._watched_press_bases = press_bases
         self._watched_release_bases = release_bases
+
+    def _record_keep_buff_interaction(self, base: str) -> None:
+        if base not in self._KEEP_BUFF_INTERACTION_BASES:
+            return
+        with self._lock:
+            if not self._running:
+                return
+            if not any(skill.action == SkillAction.KEEP_BUFF for skill in self.current_profile.skills):
+                return
+            self._keep_buff_interaction_until = max(
+                self._keep_buff_interaction_until,
+                time.monotonic() + self._KEEP_BUFF_INTERACTION_GRACE_SECONDS,
+            )
+
+    def _keep_buff_is_temporarily_blocked(self) -> bool:
+        with self._lock:
+            return time.monotonic() < self._keep_buff_interaction_until
+
+    def _should_consume_smart_pause(self, base: str) -> bool:
+        if base not in self._SMART_PAUSE_BASES:
+            return False
+        with self._lock:
+            if not self.general.smart_pause or not self._running:
+                return False
+            if self._pressed_modifiers:
+                return False
+            paused = self._paused
+        if base != "tab" and not paused:
+            return False
+        now = time.monotonic()
+        previous = self._smart_pause_last_pressed_at.get(base, 0.0)
+        self._smart_pause_last_pressed_at[base] = now
+        if now - previous > self._SMART_PAUSE_DOUBLE_TAP_SECONDS:
+            return False
+        if base == "tab":
+            self._smart_pause_last_pressed_at.pop(base, None)
+            self.toggle_pause()
+        else:
+            self.stop_macro(reason="收到智能暂停停止键")
+        return True
 
     def needs_keyboard_listener(self) -> bool:
         watched = self._watched_press_bases | self._watched_release_bases
@@ -349,14 +403,7 @@ class MacroApp:
         self._dispatch_press(direction)
 
     def _dispatch_press(self, base: str) -> None:
-        if self.general.smart_pause:
-            if base == "tab":
-                self.toggle_pause()
-                return
-            if base in {"enter", "t", "m"}:
-                self.stop_macro(reason="收到智能暂停停止键")
-                return
-
+        self._record_keep_buff_interaction(base)
         start_hotkey = self.general.start_hotkey
         if self._matches_hotkey(start_hotkey, base):
             self._handle_start_hotkey_press()
@@ -387,12 +434,18 @@ class MacroApp:
                     return
 
         with self._lock:
-            if not self._running or self._paused:
-                return
-            skills = list(self.current_profile.skills)
+            running = self._running
+            paused = self._paused
+            skills = list(self.current_profile.skills) if running and not paused else []
+        triggered_skill = False
         for skill in skills:
             if skill.action == SkillAction.KEY_TRIGGER and self._matches_hotkey(skill.trigger, base):
                 self._execute_skill(skill)
+                triggered_skill = True
+        if triggered_skill:
+            return
+        if self._should_consume_smart_pause(base):
+            return
 
     def _dispatch_release(self, base: str) -> None:
         start_hotkey = self.general.start_hotkey
@@ -448,6 +501,8 @@ class MacroApp:
             self._stop_event = threading.Event()
             self._workers = []
             self._held_keys = []
+            self._keep_buff_interaction_until = 0.0
+            self._smart_pause_last_pressed_at.clear()
             while not self._skill_queue.empty():
                 self._skill_queue.get_nowait()
             self._running = True
@@ -510,6 +565,8 @@ class MacroApp:
                 return
             self._running = False
             self._paused = False
+            self._keep_buff_interaction_until = 0.0
+            self._smart_pause_last_pressed_at.clear()
             stop_event = self._stop_event
             workers = list(self._workers)
             held_keys = list(self._held_keys)
@@ -627,6 +684,8 @@ class MacroApp:
                     time.sleep(skill.repeat_interval_ms / 1000.0)
             return
         if skill.action != SkillAction.KEEP_BUFF:
+            return
+        if self._keep_buff_is_temporarily_blocked():
             return
         active_window = self._active_window()
         if active_window is None:
@@ -868,16 +927,20 @@ class MacroApp:
         self.run_macro()
 
     def trigger_helper(self) -> None:
+        auto_paused = False
         with self._lock:
             if self._helper_running:
                 self._helper_break = True
                 print(tr("已请求停止当前助手流程。", "Stop requested for current helper."), flush=True)
                 return
-            if self._running:
-                print(tr("战斗宏运行中，当前不会启动助手。", "Combat macro is running; helper will not start."), flush=True)
-                return
+            if self._running and not self._paused:
+                self._paused = True
+                auto_paused = True
             self._helper_running = True
             self._helper_break = False
+            self._helper_auto_paused = auto_paused
+        if auto_paused:
+            emit_runner_event("macro_paused")
         print(tr("已收到助手热键，正在识别当前界面...", "Helper hotkey received; detecting current screen..."), flush=True)
         self._helper_thread = threading.Thread(target=self._run_helper, daemon=True)
         self._helper_thread.start()
@@ -924,7 +987,7 @@ class MacroApp:
 
             if self.general.helper.reforge_enabled or self.general.helper.upgrade_enabled or self.general.helper.convert_enabled:
                 kanai_state = is_kanai_cube_open(image, width, height, window.title)
-                if kanai_state == 2 and self.general.helper.reforge_enabled and mouse_position == 1:
+                if kanai_state == 2 and self.general.helper.reforge_enabled:
                     print(tr("助手已启动：识别到卡奈魔盒重铸页，开始重铸。", "Helper started: Kanai's Cube reforge page detected; starting reforge."), flush=True)
                     self._one_button_reforge_helper(width, height, mouse_x, mouse_y)
                     return
@@ -954,6 +1017,12 @@ class MacroApp:
             with self._lock:
                 self._helper_running = False
                 self._helper_break = False
+                resume = self._helper_auto_paused and self._running and self._paused
+                if resume:
+                    self._paused = False
+                    self._helper_auto_paused = False
+            if resume:
+                emit_runner_event("macro_resumed")
 
     def _helper_sleep(self, ms: int) -> None:
         time.sleep(max(ms, 1) / 1000.0)
@@ -1077,6 +1146,13 @@ class MacroApp:
             self._helper_sleep(20)
         return previous
 
+    def _kanai_slot_has_item(self, width: int, height: int, slot_id: int) -> bool | None:
+        capture = self._capture_game_image()
+        if capture is None:
+            return None
+        image, _, _ = capture
+        return not is_inventory_space_empty(image, width, height, slot_id, "kanai")
+
     def _one_button_reforge_helper(self, width: int, height: int, mouse_x: int, mouse_y: int) -> None:
         window = self._active_window()
         if window is None:
@@ -1089,6 +1165,18 @@ class MacroApp:
                 break
             self._click_right()
             self._helper_sleep(self.general.helper.animation_delay_ms // 4)
+            slot_has_item = self._kanai_slot_has_item(width, height, 1)
+            if slot_has_item is None:
+                break
+            if not slot_has_item:
+                print(
+                    tr(
+                        "重铸助手已取消：当前鼠标未指向可重铸的背包装备。",
+                        "Reforge helper cancelled: the mouse is not pointing at a reforgeable inventory item.",
+                    ),
+                    flush=True,
+                )
+                return
             for point in [kanai[1], kanai[0], kanai[2], kanai[3]]:
                 self._move_mouse(window.x + point[0], window.y + point[1])
                 self._click_left()
