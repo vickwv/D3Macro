@@ -210,6 +210,12 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 
 ## 更新日志
 
+### v2.0.3（2026-05-07）
+
+**Bug 修复**
+
+- **Windows 非中文系统（cp1252）启动崩溃 UnicodeEncodeError**：运行器在非中文 Windows 下启动时立即崩溃。PyInstaller 打包后 `sys.stdout` 按 Windows ANSI 代码页初始化，`PYTHONIOENCODING` 尚未生效，第一条中文 `print()` 即崩溃。修复方案：在两处 runner 入口开头显式调用 `sys.stdout.reconfigure(encoding='utf-8', errors='replace')`。
+
 ### v2.0.2（2026-05-07）
 
 **Bug 修复（Windows）**

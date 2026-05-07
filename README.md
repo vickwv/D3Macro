@@ -210,6 +210,12 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 
 ## Changelog
 
+### v2.0.3 (2026-05-07)
+
+**Bug Fixes**
+
+- **UnicodeEncodeError on startup (Western Windows / cp1252)**: The runner crashed immediately on non-Chinese Windows with `UnicodeEncodeError: 'charmap' codec can't encode characters`. PyInstaller initialises `sys.stdout` with the Windows ANSI code page before `PYTHONIOENCODING` is read. Fixed by calling `sys.stdout.reconfigure(encoding='utf-8', errors='replace')` at both runner entry points.
+
 ### v2.0.2 (2026-05-07)
 
 **Bug Fixes (Windows)**
