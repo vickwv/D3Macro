@@ -16,7 +16,7 @@ except ImportError:
     from config_io import parse_float, parse_int, write_config_parser_atomic  # type: ignore[no-redef]
     from runner_events import parse_runner_event  # type: ignore[no-redef]
 
-from PySide6.QtCore import QProcess, QTimer, Qt
+from PySide6.QtCore import QProcess, QProcessEnvironment, QTimer, Qt
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
     QAbstractSpinBox,
@@ -980,7 +980,11 @@ class MainWindow(QMainWindow):
         )
         self.status_log_value.setText(log_text)
         self.status_log_value.setToolTip(latest_text)
-        self._update_tray_menu()
+        # Only rebuild the tray menu when runner state actually changes to avoid
+        # unnecessary work on every log line append.
+        if running != getattr(self, "_prev_running_state", None):
+            self._prev_running_state = running
+            self._update_tray_menu()
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
@@ -1147,17 +1151,24 @@ class MainWindow(QMainWindow):
         command = build_runner_command(self.config_path, "")
         self.process = QProcess(self)
         self.process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+        # Force UTF-8 for subprocess stdout so Chinese text is never garbled on Windows
+        env = QProcessEnvironment.systemEnvironment()
+        env.insert("PYTHONIOENCODING", "utf-8")
+        env.insert("PYTHONUTF8", "1")
+        self.process.setProcessEnvironment(env)
         self.process.readyReadStandardOutput.connect(self._read_process_output)
         self.process.finished.connect(self._runner_finished)
+        self.process.errorOccurred.connect(self._runner_error_occurred)
         self.process.start(command[0], command[1:])
-        if not self.process.waitForStarted(5000):
-            QMessageBox.critical(self, tr("启动失败", "Start failed"), tr("无法启动运行器。", "Failed to start the runner."))
-            self.process = None
-            self._update_runtime_status_widgets()
-            return
         if log_message:
             self._append_log(log_message)
         else:
+            self._update_runtime_status_widgets()
+
+    def _runner_error_occurred(self, error: QProcess.ProcessError) -> None:
+        if error == QProcess.ProcessError.FailedToStart:
+            QMessageBox.critical(self, tr("启动失败", "Start failed"), tr("无法启动运行器。", "Failed to start the runner."))
+            self.process = None
             self._update_runtime_status_widgets()
 
     def stop_runner(self, log_message: str | None = "已停止运行器。") -> None:
