@@ -208,6 +208,30 @@ python -m unittest discover -s tests
 
 Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux game macro tool, Wayland automation tool, cross-platform macro tool, visual detection automation, pixel based automation tool, safe external macro, no injection game automation, alternative to AutoHotkey for Diablo III
 
+## Changelog
+
+### v2.0.1 (2026-05-07)
+
+**Bug Fixes**
+
+- **Smart Pause — double-tap to prevent accidental triggers**
+  Previously a single Tab keypress immediately paused the macro, and a single Enter/M/T immediately stopped it — very easy to trigger accidentally.
+  Now requires a **double-tap within 0.35 s**:
+  - Double-tap **Tab** → pause / resume macro
+  - Double-tap **Enter, M, or T** (only while already paused) → stop macro
+  - Suppressed when **Ctrl / Alt / Shift / Win** is held, so hotkeys work normally
+
+- **Helper hotkey (F5) blocked while macro is running**
+  Previously pressing F5 while the battle macro was running showed "Combat macro is running; helper will not start."
+  Now if the macro is running and not paused when F5 is pressed, it **auto-pauses** for the duration of the helper; once the helper finishes it **auto-resumes**.
+  Typical flow: run macro in combat → return to town → press F5 to salvage — no need to stop the macro manually.
+
+- **System tray icon blank**
+  After the v2.0.0 rename to D3Macro the icon file was renamed to `d3macro-256.png`, but the code still searched for the old name `d3keyhelper-linux-256.png`, leaving the tray icon empty.
+  Now searches `d3macro-256.png` first and falls back to the old name.
+
+---
+
 ## Credits
 
 D3Macro was originally derived from [D3keyHelper](https://github.com/WeijieH/D3keyHelper) by Weijie Huang and has since evolved into a cross-platform desktop automation project.

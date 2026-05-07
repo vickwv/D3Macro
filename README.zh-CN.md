@@ -208,6 +208,30 @@ python -m unittest discover -s tests
 
 Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux game macro tool, Wayland automation tool, cross-platform macro tool, visual detection automation, pixel based automation tool, safe external macro, no injection game automation, alternative to AutoHotkey for Diablo III
 
+## 更新日志
+
+### v2.0.1（2026-05-07）
+
+**Bug 修复**
+
+- **智能暂停 — 防误触双击逻辑**
+  原来 Tab 键单击即触发暂停，回车/M/T 键单击即停止宏，极易误触发。
+  现改为 **0.35 秒内连击两次** 才触发：
+  - 双击 **Tab** → 暂停 / 恢复宏
+  - 宏已暂停时双击 **回车、M、T** → 停止宏（未暂停时无效，防止误停）
+  - **按住 Ctrl / Alt / Shift / Win** 时不触发，方便正常使用组合键
+
+- **助手热键（F5）在宏运行时无法触发**
+  原来战斗宏运行期间按 F5 会提示"战斗宏运行中，当前不会启动助手"，必须先停宏才能用助手。
+  现在按 F5 时，若宏正在运行且未暂停，宏会**自动暂停**；助手执行完毕后**自动恢复**。
+  典型场景：开着战斗宏刷图 → 回主城 → 直接按 F5 分解装备，无需手动停宏。
+
+- **系统托盘图标显示空白**
+  v2.0.0 项目更名为 D3Macro 后，图标文件名也改为 `d3macro-256.png`，但代码仍搜索旧文件名 `d3keyhelper-linux-256.png`，导致托盘图标为空。
+  现在优先搜索 `d3macro-256.png`，找不到时回退到旧文件名。
+
+---
+
 ## 致谢
 
 D3Macro 最初基于 [D3keyHelper](https://github.com/WeijieH/D3keyHelper) 演进而来，现已发展为一个面向跨平台桌面自动化的独立项目。
