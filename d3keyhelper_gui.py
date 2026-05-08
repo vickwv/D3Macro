@@ -1184,7 +1184,12 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
         self.process.terminate()
-        if not self.process.waitForFinished(3000):
+        # On Windows, terminate() sends WM_CLOSE which Python processes do not
+        # handle by default, so we use a short grace period before force-killing.
+        # On Linux, SIGTERM is caught by the runner's signal handler, so we
+        # allow more time for a clean shutdown.
+        wait_ms = 400 if sys.platform == "win32" else 3000
+        if not self.process.waitForFinished(wait_ms):
             self.process.kill()
             self.process.waitForFinished(1000)
         if log_message:
@@ -1381,6 +1386,19 @@ def main() -> int:
             return runtime_main()
         finally:
             sys.argv = original_argv
+
+    if sys.platform == "win32":
+        # Tell Windows to treat this process as a distinct application so that
+        # the taskbar button and Alt+Tab switcher use our embedded icon instead
+        # of grouping us under a generic Python / Qt icon.
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "io.github.WeijieH.D3Macro"
+            )
+        except Exception:
+            pass
+
     config_path = Path(sys.argv[1]).expanduser().resolve() if len(sys.argv) > 1 else default_config_path().resolve()
     # When running from a PyInstaller bundle the Qt plugin directory is
     # isolated to the bundle.  Add system Qt6 plugin directories so Qt can

@@ -210,6 +210,20 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 
 ## 更新日志
 
+### v2.0.5（2026-05-08）
+
+**Bug 修复与优化（Windows）**
+
+- **任务栏 / 标题栏显示 Qt 默认图标而非 D3Macro 图标**：`packaging/icons/d3macro.ico` 现已预先生成并提交到仓库，不再依赖构建时可能静默失败的 Pillow 生成步骤。Windows 启动时新增调用 `SetCurrentProcessExplicitAppUserModelID`，让操作系统正确将窗口与 EXE 内嵌图标关联，任务栏显示正确图标。
+- **切换配置时运行器重启明显偏慢（Windows）**：双重修复：(1) `stop_runner()` 在 Windows 下等待时间从 3 000 ms 缩短至 400 ms——Python 进程不响应 `terminate()` 发出的 `WM_CLOSE`，旧超时几乎必然等满；(2) `build_windows.bat` 改为 `--onedir` 模式，运行器子进程启动时不再重新解压整个 PyInstaller 包（原来每次重启耗时 2–5 秒，现在 < 0.5 秒）。
+
+**新增：在 Linux 下为 Windows 打包的脚本**
+
+- 新增 `build_windows_from_linux.sh`——无需 Windows 即可在 Arch Linux / 任意 Linux 主机上构建 Windows `.exe`：
+  - **Docker 模式（默认）**：在内置 Wine + Python 3.11 for Windows 的 Debian 容器内完成构建，宿主机无需安装 Wine（`sudo pacman -S docker`）。
+  - **Wine 模式**：`BUILD_MODE=wine ./build_windows_from_linux.sh`——直接使用宿主机 Wine（`sudo pacman -S wine`）。
+  - Docker 镜像首次构建后自动缓存，后续运行直接进入 PyInstaller 阶段。
+
 ### v2.0.4（2026-05-07）
 
 **Bug 修复（Windows）**

@@ -210,6 +210,20 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 
 ## Changelog
 
+### v2.0.5 (2026-05-08)
+
+**Bug Fixes & Improvements (Windows)**
+
+- **Taskbar / title-bar icon shows Qt logo instead of D3Macro icon**: `packaging/icons/d3macro.ico` is now pre-generated and committed to the repository, so the ICO is always present without relying on a build-time Pillow step that could silently fail. `SetCurrentProcessExplicitAppUserModelID` is now called on Windows at startup so the OS correctly associates the window with our embedded EXE icon in the taskbar.
+- **Runner restart is slow on Windows**: Two-part fix: (1) `stop_runner()` now waits only 400 ms before force-killing on Windows instead of the previous 3 000 ms — Python processes don't handle `WM_CLOSE` from `terminate()` so the old timeout was always fully spent; (2) `build_windows.bat` switched from `--onefile` to `--onedir` so the runner subprocess no longer has to re-extract the PyInstaller bundle on every launch (was 2–5 s per restart, now < 0.5 s).
+
+**New: Linux → Windows cross-build script**
+
+- Added `build_windows_from_linux.sh` — build the Windows `.exe` on Arch Linux / any Linux host without running Windows.
+  - **Docker mode (default)**: builds inside a Debian container with Wine + Python 3.11 for Windows; no Wine needed on the host (`sudo pacman -S docker`).
+  - **Wine mode**: `BUILD_MODE=wine ./build_windows_from_linux.sh` — uses host Wine directly (`sudo pacman -S wine`).
+  - Docker image is built once and cached; subsequent runs skip straight to PyInstaller.
+
 ### v2.0.4 (2026-05-07)
 
 **Bug Fixes (Windows)**
