@@ -50,7 +50,10 @@ python -m unittest discover -s tests
 - **功能/修复说明**：描述……
 ```
 
-> **注意**：如果发布时该文件不存在，CI 会自动生成一份仅含 git log 摘要的默认日志，但建议手动编写以保证质量。
+> ⚠️ **必须完成此步骤**：
+> - `build-windows.yml` 使用 `body_path` 读取该文件，**文件不存在则 CI Release 步骤直接失败**。
+> - `build-appimage.yml` 有兜底逻辑（自动从 git log 生成），但质量差，仍建议手动编写。
+> - **标签必须在该文件提交到 main 之后再推送**，否则 CI 读不到文件。
 
 ### 第 2 步：更新 README 更新日志章节
 
@@ -82,7 +85,7 @@ git push origin main --tags
 - [ ] Release 已创建，标题为 `vX.X.X`
 - [ ] 发布日志内容正确（来自 `.github/release-notes/vX.X.X.md`）
 - [ ] 附件包含 `D3Macro-Linux-vX.X.X-x86_64.AppImage`
-- [ ] 附件包含 `D3Macro-Windows-vX.X.X.exe`
+- [ ] 附件包含 `D3Macro-Windows-vX.X.X.zip`（解压后运行 `D3Macro.exe`）
 
 ---
 
@@ -108,4 +111,5 @@ git push origin main --tags
 | `README.md` | 英文文档（含 Changelog 章节） |
 | `README.zh-CN.md` | 中文文档（含更新日志章节） |
 | `build_appimage.sh` | 本地手动构建 AppImage 脚本 |
-| `build_windows.bat` | 本地手动构建 Windows exe 脚本 |
+| `build_windows.bat` | 本地手动构建 Windows exe 脚本（产物为 `.zip`） |
+| `build_windows_from_linux.sh` | 在 Linux 上交叉编译 Windows 版本（Docker 或 Wine 模式） |
