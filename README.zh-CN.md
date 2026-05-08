@@ -215,7 +215,7 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 **Bug 修复与优化（Windows）**
 
 - **任务栏 / 标题栏显示 Qt 默认图标而非 D3Macro 图标**：`packaging/icons/d3macro.ico` 现已预先生成并提交到仓库，不再依赖构建时可能静默失败的 Pillow 生成步骤。Windows 启动时新增调用 `SetCurrentProcessExplicitAppUserModelID`，让操作系统正确将窗口与 EXE 内嵌图标关联，任务栏显示正确图标。
-- **切换配置时运行器重启明显偏慢（Windows）**：双重修复：(1) `stop_runner()` 在 Windows 下等待时间从 3 000 ms 缩短至 400 ms——Python 进程不响应 `terminate()` 发出的 `WM_CLOSE`，旧超时几乎必然等满；(2) `build_windows.bat` 改为 `--onedir` 模式，运行器子进程启动时不再重新解压整个 PyInstaller 包（原来每次重启耗时 2–5 秒，现在 < 0.5 秒）。
+- **切换配置时运行器重启明显偏慢（Windows）**：双重修复：(1) `stop_runner()` 在 Windows 下等待时间从 3 000 ms 缩短至 400 ms——Python 进程不响应 `terminate()` 发出的 `WM_CLOSE`，旧超时几乎必然等满；(2) `_launch_runner()` 在启动子进程时将 `sys._MEIPASS` 通过 `_MEIPASS2` 环境变量传入，PyInstaller bootloader 检测到该变量后直接复用父进程已解压的临时目录，无需重新解压，消除了每次重启 2–5 秒的延迟，打包方式保持 `--onefile`（单文件 `.exe`）。
 
 **新增：在 Linux 下为 Windows 打包的脚本**
 
@@ -236,36 +236,6 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 **Bug 修复**
 
 - **Windows 非中文系统（cp1252）启动崩溃 UnicodeEncodeError**：运行器在非中文 Windows 下启动时立即崩溃。PyInstaller 打包后 `sys.stdout` 按 Windows ANSI 代码页初始化，`PYTHONIOENCODING` 尚未生效，第一条中文 `print()` 即崩溃。修复方案：在两处 runner 入口开头显式调用 `sys.stdout.reconfigure(encoding='utf-8', errors='replace')`。
-
-### v2.0.2（2026-05-07）
-
-**Bug 修复（Windows）**
-
-- **EXE 缺少图标**：构建脚本现在从 PNG 生成 `.ico` 并通过 `--icon` 传给 PyInstaller。
-- **运行日志中文乱码**：中文 Windows 子进程默认 GBK 编码，修复方案为注入 `PYTHONIOENCODING=utf-8` 和 `PYTHONUTF8=1`。
-- **点击启动 / 日志刷新时界面卡顿**：`waitForStarted` 阻塞主线程；托盘菜单每条日志都重建。改为异步 `errorOccurred` 信号，仅在状态变化时重建托盘菜单。
-- **下拉框出现透明玻璃质感多余圆圈**：Fluent 半透明 QSS 在纯白背景下产生光晕，通过 `setCustomStyleSheet` 替换为不透明颜色。
-- **Windows 下字体很细看不清**：Fluent 控件默认 `Segoe UI`，中文回退到宋体（SimSun）。修复方案：启动时调用 `setFontFamilies(['Microsoft YaHei', ...])` 并将全局 `font-weight: 400` 升级为 `500`。
-
-### v2.0.1（2026-05-07）
-
-**Bug 修复**
-
-- **智能暂停 — 防误触双击逻辑**
-  原来 Tab 键单击即触发暂停，回车/M/T 键单击即停止宏，极易误触发。
-  现改为 **0.35 秒内连击两次** 才触发：
-  - 双击 **Tab** → 暂停 / 恢复宏
-  - 宏已暂停时双击 **回车、M、T** → 停止宏（未暂停时无效，防止误停）
-  - **按住 Ctrl / Alt / Shift / Win** 时不触发，方便正常使用组合键
-
-- **助手热键（F5）在宏运行时无法触发**
-  原来战斗宏运行期间按 F5 会提示"战斗宏运行中，当前不会启动助手"，必须先停宏才能用助手。
-  现在按 F5 时，若宏正在运行且未暂停，宏会**自动暂停**；助手执行完毕后**自动恢复**。
-  典型场景：开着战斗宏刷图 → 回主城 → 直接按 F5 分解装备，无需手动停宏。
-
-- **系统托盘图标显示空白**
-  v2.0.0 项目更名为 D3Macro 后，图标文件名也改为 `d3macro-256.png`，但代码仍搜索旧文件名 `d3keyhelper-linux-256.png`，导致托盘图标为空。
-  现在优先搜索 `d3macro-256.png`，找不到时回退到旧文件名。
 
 ---
 

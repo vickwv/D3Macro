@@ -215,7 +215,7 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 **Bug Fixes & Improvements (Windows)**
 
 - **Taskbar / title-bar icon shows Qt logo instead of D3Macro icon**: `packaging/icons/d3macro.ico` is now pre-generated and committed to the repository, so the ICO is always present without relying on a build-time Pillow step that could silently fail. `SetCurrentProcessExplicitAppUserModelID` is now called on Windows at startup so the OS correctly associates the window with our embedded EXE icon in the taskbar.
-- **Runner restart is slow on Windows**: Two-part fix: (1) `stop_runner()` now waits only 400 ms before force-killing on Windows instead of the previous 3 000 ms — Python processes don't handle `WM_CLOSE` from `terminate()` so the old timeout was always fully spent; (2) `build_windows.bat` switched from `--onefile` to `--onedir` so the runner subprocess no longer has to re-extract the PyInstaller bundle on every launch (was 2–5 s per restart, now < 0.5 s).
+- **Runner restart is slow on Windows**: Two-part fix: (1) `stop_runner()` now waits only 400 ms before force-killing on Windows instead of the previous 3 000 ms — Python processes don't handle `WM_CLOSE` from `terminate()` so the old timeout was always fully spent; (2) `_launch_runner()` now passes `sys._MEIPASS` as `_MEIPASS2` to the subprocess environment — the PyInstaller bootloader skips re-extraction when this variable is set, eliminating the 2–5 s startup penalty per runner restart. Build stays `--onefile` (single `.exe`).
 
 **New: Linux → Windows cross-build script**
 
@@ -236,36 +236,6 @@ Diablo 3 macro, Diablo III automation tool, Diablo 3 skill rotation tool, Linux 
 **Bug Fixes**
 
 - **UnicodeEncodeError on startup (Western Windows / cp1252)**: The runner crashed immediately on non-Chinese Windows with `UnicodeEncodeError: 'charmap' codec can't encode characters`. PyInstaller initialises `sys.stdout` with the Windows ANSI code page before `PYTHONIOENCODING` is read. Fixed by calling `sys.stdout.reconfigure(encoding='utf-8', errors='replace')` at both runner entry points.
-
-### v2.0.2 (2026-05-07)
-
-**Bug Fixes (Windows)**
-
-- **EXE icon missing**: Build script now generates a `.ico` from the PNG and passes it to PyInstaller.
-- **Garbled Chinese in run log**: On Chinese Windows the runner subprocess used GBK encoding. Fixed by injecting `PYTHONIOENCODING=utf-8` and `PYTHONUTF8=1` into the subprocess environment.
-- **GUI freezes on Start / log updates**: `QProcess.waitForStarted` blocked the event loop; tray menu was rebuilt on every log line. Switched to async `errorOccurred` signal and throttled tray rebuilds to state changes only.
-- **Combo box glass-ring artifact**: Fluent semi-transparent QSS produced a visible halo on plain backgrounds. Replaced with fully opaque overrides via `setCustomStyleSheet`.
-- **Fonts very thin on Windows**: Fluent widgets defaulted to `Segoe UI`; Chinese text fell back to SimSun (宋体, thin strokes). Fixed by calling `setFontFamilies(['Microsoft YaHei', ...])` at startup and bumping `font-weight` 400 → 500 throughout.
-
-### v2.0.1 (2026-05-07)
-
-**Bug Fixes**
-
-- **Smart Pause — double-tap to prevent accidental triggers**
-  Previously a single Tab keypress immediately paused the macro, and a single Enter/M/T immediately stopped it — very easy to trigger accidentally.
-  Now requires a **double-tap within 0.35 s**:
-  - Double-tap **Tab** → pause / resume macro
-  - Double-tap **Enter, M, or T** (only while already paused) → stop macro
-  - Suppressed when **Ctrl / Alt / Shift / Win** is held, so hotkeys work normally
-
-- **Helper hotkey (F5) blocked while macro is running**
-  Previously pressing F5 while the battle macro was running showed "Combat macro is running; helper will not start."
-  Now if the macro is running and not paused when F5 is pressed, it **auto-pauses** for the duration of the helper; once the helper finishes it **auto-resumes**.
-  Typical flow: run macro in combat → return to town → press F5 to salvage — no need to stop the macro manually.
-
-- **System tray icon blank**
-  After the v2.0.0 rename to D3Macro the icon file was renamed to `d3macro-256.png`, but the code still searched for the old name `d3keyhelper-linux-256.png`, leaving the tray icon empty.
-  Now searches `d3macro-256.png` first and falls back to the old name.
 
 ---
 
