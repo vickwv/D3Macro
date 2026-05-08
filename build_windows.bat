@@ -25,15 +25,15 @@ if not exist "%ICON_ICO%" (
   )
 )
 
-rem --onedir (not --onefile) is used so that the runner subprocess launched by
-rem the GUI shares the already-extracted bundle directory and starts instantly
-rem instead of re-extracting every time the runner restarts.
+rem --onefile bundles everything into a single .exe.  The runner subprocess
+rem launched by the GUI sets _MEIPASS2 so the child reuses the parent's
+rem already-extracted temp dir and starts instantly (no re-extraction).
 if defined ICON_ICO (
   %PYTHON_BIN% -m PyInstaller ^
     --noconfirm ^
     --clean ^
     --windowed ^
-    --onedir ^
+    --onefile ^
     --name "%APP_NAME%" ^
     --hidden-import pynput.keyboard._win32 ^
     --hidden-import pynput.mouse._win32 ^
@@ -49,7 +49,7 @@ if defined ICON_ICO (
     --noconfirm ^
     --clean ^
     --windowed ^
-    --onedir ^
+    --onefile ^
     --name "%APP_NAME%" ^
     --hidden-import pynput.keyboard._win32 ^
     --hidden-import pynput.mouse._win32 ^
@@ -61,5 +61,5 @@ if defined ICON_ICO (
 )
 
 echo.
-echo === Build complete: dist\%APP_NAME%\%APP_NAME%.exe ===
+echo === Build complete: dist\%APP_NAME%.exe ===
 endlocal

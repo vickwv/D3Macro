@@ -85,7 +85,7 @@ git push origin main --tags
 - [ ] Release 已创建，标题为 `vX.X.X`
 - [ ] 发布日志内容正确（来自 `.github/release-notes/vX.X.X.md`）
 - [ ] 附件包含 `D3Macro-Linux-vX.X.X-x86_64.AppImage`
-- [ ] 附件包含 `D3Macro-Windows-vX.X.X.zip`（解压后运行 `D3Macro.exe`）
+- [ ] 附件包含 `D3Macro-Windows-vX.X.X.exe`
 
 ---
 
@@ -111,5 +111,5 @@ git push origin main --tags
 | `README.md` | 英文文档（含 Changelog 章节） |
 | `README.zh-CN.md` | 中文文档（含更新日志章节） |
 | `build_appimage.sh` | 本地手动构建 AppImage 脚本 |
-| `build_windows.bat` | 本地手动构建 Windows exe 脚本（产物为 `.zip`） |
+| `build_windows.bat` | 本地手动构建 Windows exe 脚本（产物为单个 `.exe`） |
 | `build_windows_from_linux.sh` | 在 Linux 上交叉编译 Windows 版本（Docker 或 Wine 模式） |

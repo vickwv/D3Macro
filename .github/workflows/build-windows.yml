@@ -34,7 +34,7 @@ jobs:
             --noconfirm `
             --clean `
             --windowed `
-            --onedir `
+            --onefile `
             --name "D3Macro-Windows" `
             --hidden-import pynput.keyboard._win32 `
             --hidden-import pynput.mouse._win32 `
@@ -46,7 +46,7 @@ jobs:
             --icon "packaging\icons\d3macro.ico" `
             d3keyhelper_gui.py
 
-      - name: Package and rename artifact
+      - name: Rename artifact
         id: artifact
         shell: bash
         run: |
@@ -57,11 +57,10 @@ jobs:
             safe_ref="$(printf "%s" "$ref_name" | tr -c 'A-Za-z0-9._-' '-')"
             version="${safe_ref}-${GITHUB_SHA::7}"
           fi
-          zip_name="D3Macro-Windows-${version}.zip"
-          zip_path="dist/${zip_name}"
-          cd dist && 7z a "../${zip_path}" D3Macro-Windows/ && cd ..
-          echo "name=${zip_name}" >> "$GITHUB_OUTPUT"
-          echo "path=${zip_path}" >> "$GITHUB_OUTPUT"
+          exe_name="D3Macro-Windows-${version}.exe"
+          mv dist/D3Macro-Windows.exe "dist/${exe_name}"
+          echo "name=${exe_name}" >> "$GITHUB_OUTPUT"
+          echo "path=dist/${exe_name}" >> "$GITHUB_OUTPUT"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v6

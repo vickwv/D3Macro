@@ -27,7 +27,7 @@
 #   BUILD_MODE=wine ./build_windows_from_linux.sh
 #
 # ── Output ────────────────────────────────────────────────────────────────────
-#   dist/D3Macro-Windows/D3Macro-Windows.exe  (--onedir bundle)
+#   dist/D3Macro-Windows.exe  (--onefile bundle)
 #
 # ── Environment overrides ─────────────────────────────────────────────────────
 #   PYTHON_WIN_VERSION   Windows Python version to install  (default: 3.11.9)
@@ -89,7 +89,7 @@ PY
 pyinstaller_args() {
     local args=(
         -m PyInstaller
-        --noconfirm --clean --windowed --onedir
+        --noconfirm --clean --windowed --onefile
         --name "${APP_NAME}"
         --hidden-import "pynput.keyboard._win32"
         --hidden-import "pynput.mouse._win32"

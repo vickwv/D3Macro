@@ -1159,6 +1159,12 @@ class MainWindow(QMainWindow):
         env = QProcessEnvironment.systemEnvironment()
         env.insert("PYTHONIOENCODING", "utf-8")
         env.insert("PYTHONUTF8", "1")
+        # When running from a --onefile PyInstaller bundle, tell the child process
+        # to reuse the parent's already-extracted temp dir (_MEIPASS2 is the env var
+        # the PyInstaller bootloader checks before deciding to re-extract).
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            env.insert("_MEIPASS2", meipass)
         self.process.setProcessEnvironment(env)
         self.process.readyReadStandardOutput.connect(self._read_process_output)
         self.process.finished.connect(self._runner_finished)
